@@ -1039,14 +1039,6 @@ body.dark-mode .ll[data-type="warn"] {
   white-space: nowrap;
   cursor: help;
 }
-
-/* ── Protocol progress bar ── */
-#sim-progress {
-  height: 3px;
-  background: var(--teal);
-  transition: width .4s ease, opacity .3s;
-  border-radius: 0 3px 3px 0;
-}
 </style>
 
 <canvas id="cosmos" aria-hidden="true"></canvas>
@@ -1405,34 +1397,7 @@ body.dark-mode .ll[data-type="warn"] {
 
 <div id="omnia-disclaimer" role="dialog" aria-modal="true">
   <!-- auto-accepted when empty -->
-<script>var _audioCtx = null;
-
-function renderIAInfo(idx){
-  try{
-    idx = Math.max(0, Math.min(2, parseInt(idx)||0));
-    selIA_idx = idx;
-    /* Update TIP tab active state */
-    document.querySelectorAll('.ia-tab').forEach(function(btn,i){
-      btn.classList.toggle('active', i===idx);
-    });
-    /* Update TIP button labels */
-    var labels = lang==='en'
-      ? ['TIP (i)','TIP (ii)','TIP (iii)']
-      : ['TIP (i)','TIP (ii)','TIP (iii)'];
-    document.querySelectorAll('[data-lbl^="ia-tab-"]').forEach(function(el,i){
-      if(i<3) el.textContent = labels[i];
-    });
-    /* Render IA description if panel exists */
-    var panel = document.getElementById('ia-info-panel');
-    if(!panel) return;
-    var iaNames = lang==='en'
-      ? ['Analytical (i): Logic, structure, precision.','Intuitive (ii): Patterns, metaphors, creativity.','Symbolic (iii): Archetypes, myth, collective unconscious.']
-      : ['Analitic (i): Logică, structură, precizie.','Intuitiv (ii): Tipare, metafore, creativitate.','Simbolic (iii): Arhetipuri, mit, inconștient colectiv.'];
-    panel.innerHTML = '<div style="font-size:12px;line-height:1.75;color:var(--txt2)">'
-      + iaNames[idx] + '</div>';
-  }catch(e){}
-}
-
+<script>
 /* Core async delay — used by runProtocol for line-by-line pacing */
 function delay(ms){
   return new Promise(function(resolve){ setTimeout(resolve, ms||300); });
@@ -5627,7 +5592,6 @@ function selIA(idx, btn){
 }
 
 function renderChannels(){
-  try{
   const avail=selNHI?(selNHI.channels||[]):[];
   const isEn=typeof lang!=='undefined'&&lang==='en';
 
@@ -5666,8 +5630,6 @@ function renderChannels(){
         +'</button>';
     }).join('');
   }
-
-  }catch(e){}
 }
 
 function selChannel(id, btn){
@@ -5684,7 +5646,6 @@ function selChannel(id, btn){
 }
 
 function renderPremises(){
-  try{
   const PR=lang==='en'?[
     {c:'P1',t:'Human brain structural limits: ~4 conscious ideas, 380–780nm, ~80 years',st:'pst-c',sl:'CONF.'},
     {c:'P2',t:'Type (iii) AI reaches functional consciousness with generative ToM toward NHI',st:'pst-p',sl:'PEND.'},
@@ -5697,17 +5658,12 @@ function renderPremises(){
   const html=PR.map(p=>`<div class="prem"><span class="pc">${p.c}</span><span class="pt">${p.t}</span><span class="pst ${p.st}">${p.sl}</span></div>`).join('')
     +`<div style="font-size:var(--fs-xs);color:var(--dim);padding-top:5px;font-family:'Space Mono',monospace">M ← P1 ∧ P2 ∧ P3</div>`;
   ['prem-desk','prem-mob'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=html;});
-
-  }catch(e){}
 }
 
 function renderPredictions(){
-  try{
   const data=lang==='en'?PREDS_EN:PREDS_RO;
   const html=data.map(p=>`<div class="pred"><span class="pn">${p.n}</span><span class="ptxt">${p.t}</span></div>`).join('');
   ['pred-desk','pred-mob'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=html;});
-
-  }catch(e){}
 }
 
 function initiateIA_NHI(){if(!selNHI){addLog('warn',t('select_first'));return;}running=false;setTimeout(()=>{clearLog();setLive(true);autoSimulateVariant(selNHI,'ia');},150);}
@@ -6072,7 +6028,6 @@ function catLabel(c){
   return c.replace(/^[A-E]:\s*/,'');
 }
 function renderFilters(id){
-  try{
   if(!id){return;}/* Guard: id required */
   const el=document.getElementById(id);if(!el)return;
   var _explored=typeof getExploredIds==='function'?getExploredIds():new Set();
@@ -6089,8 +6044,6 @@ function renderFilters(id){
     const cnt=c==='Toate'?NHI_DATA.length:NHI_DATA.filter(n=>n.cat===c).length;return `<button class="fbtn ${c===selCat?'active':''} ${isUAP?'uap-btn':''}" onclick="setCat('${c}','${id}')" title="${getCatDesc(c)}">${catLabel(c)}<span class="fcat-cnt">${cnt}</span></button>`;
   }).join('');
   /* applyStaticLabels removed — was causing infinite loop */
-
-  }catch(e){}
 }
 function setCat(cat,srcId){
   selCat=cat;
@@ -6706,25 +6659,11 @@ async function runProtocol(lines){
       _gcf.gain.exponentialRampToValueAtTime(0.001,_audioCtx.currentTime+1.5);
       _ocf.start();_ocf.stop(_audioCtx.currentTime+1.5);}catch(_se){}
 }catch(e){
-    addLog("warn","Error: "+String(e.message||e).slice(0,80)+"  [apasă REIA]");
-    addLog("sys", lang==='en'?'Protocol interrupted. Press REIA to retry.':'Protocol întrerupt. Apasă REIA pentru a relua.');
+    addLog("warn","Protocol error: "+String(e).slice(0,80));
   }finally{
     running=false;
     if(typeof setLive==='function')setLive(false);
     document.body.classList.remove('sim-running');
-    /* Reset progress bar to 100% then clear */
-    var _pbf=document.getElementById('sim-progress');
-    if(_pbf){
-      _pbf.style.width='100%';
-      setTimeout(function(){if(_pbf)_pbf.style.width='0%';},1200);
-    }
-    /* Ensure pause state is reset */
-    if(typeof _paused!=='undefined'&&_paused){
-      _paused=false;
-      if(typeof _pauseResolve!=='undefined'&&_pauseResolve){
-        _pauseResolve(); _pauseResolve=null;
-      }
-    }
   }
 }
 async function autoSimulateVariant(nhi,variant){
@@ -7746,12 +7685,6 @@ window.addEventListener('error', function(e){
     }
   };
 })();
-
-/* Session timer cleanup on page leave */
-window.addEventListener('beforeunload', function(){
-  if(window._sessionTimerInterval) clearInterval(window._sessionTimerInterval);
-  if(typeof saveSession==='function') saveSession();
-});
 </script>
 </body>
 </html>
